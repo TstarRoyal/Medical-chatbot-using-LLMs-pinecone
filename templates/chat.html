@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Chatbot</title>
+
+    <!-- Bootstrap & FontAwesome -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container-fluid h-100">
+    <div class="row justify-content-center h-100">
+        <div class="col-md-8 col-xl-6 chat">
+            <div class="card">
+                <!-- Chat Header -->
+                <div class="card-header msg_head">
+                    <div class="d-flex bd-highlight">
+                        <div class="img_cont">
+                            <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img">
+                            <span class="online_icon"></span>
+                        </div>
+                        <div class="user_info">
+                            <span>Medical Chatbot</span>
+                            <p>Ask me anything!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Body -->
+                <div id="messageFormeight" class="card-body msg_card_body">
+                    <!-- Messages will appear here -->
+                </div>
+
+                <!-- Chat Input -->
+                <div class="card-footer">
+                    <form id="messageArea" class="input-group">
+                        <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control type_msg" required/>
+                        <div class="input-group-append">
+                            <button type="submit" id="send" class="input-group-text send_btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chat JS -->
+<script>
+$(document).ready(function() {
+    function scrollToBottom() {
+        const chatBody = $("#messageFormeight");
+        chatBody.scrollTop(chatBody[0].scrollHeight);
+    }
+
+    $("#messageArea").on("submit", function(event) {
+        event.preventDefault();
+
+        const date = new Date();
+        const hour = date.getHours().toString().padStart(2, "0");
+        const minute = date.getMinutes().toString().padStart(2, "0");
+        const str_time = hour + ":" + minute;
+
+        let rawText = $("#text").val().trim();
+        if (!rawText) return;
+
+        // User message
+        let userHtml = `
+        <div class="d-flex justify-content-end mb-4">
+            <div class="msg_cotainer_send">
+                ${rawText}
+                <span class="msg_time_send">${str_time}</span>
+            </div>
+            <div class="img_cont_msg">
+                <img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg">
+            </div>
+        </div>`;
+        $("#text").val("");
+        $("#messageFormeight").append(userHtml);
+        scrollToBottom();
+
+        // AJAX request to backend
+        $.ajax({
+            url: "/get",
+            type: "POST",
+            data: { msg: rawText },
+            success: function(data) {
+                let botHtml = `
+                <div class="d-flex justify-content-start mb-4">
+                    <div class="img_cont_msg">
+                        <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg">
+                    </div>
+                    <div class="msg_cotainer">
+                        ${data}
+                        <span class="msg_time">${str_time}</span>
+                    </div>
+                </div>`;
+                $("#messageFormeight").append(botHtml);
+                scrollToBottom();
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
